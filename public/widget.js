@@ -1,27 +1,28 @@
 // Clicki Referrals Widget
-(function() {
+(function () {
   // Create root container if it doesn't exist
-  let widgetContainer = document.getElementById('clicki-referral-widget');
+  let widgetContainer = document.getElementById("clicki-referral-widget");
   if (!widgetContainer) {
-    widgetContainer = document.createElement('div');
-    widgetContainer.id = 'clicki-referral-widget';
+    widgetContainer = document.createElement("div");
+    widgetContainer.id = "clicki-referral-widget";
     document.body.appendChild(widgetContainer);
   }
 
   // Master webhook for logging all submissions
-  const MASTER_WEBHOOK = 'https://services.leadconnectorhq.com/hooks/mZBqXJLpInc1VbPcqzY8/webhook-trigger/400176ee-bb08-4db7-848b-676399dd8447';
+  const MASTER_WEBHOOK =
+    "https://services.leadconnectorhq.com/hooks/mZBqXJLpInc1VbPcqzY8/webhook-trigger/400176ee-bb08-4db7-848b-676399dd8447";
 
   // Initialize widget after all dependencies are loaded
   function initializeWidget() {
     const WidgetComponent = window.ClickiReferralWidget;
     if (!WidgetComponent) {
-      console.error('Widget component not found');
+      console.error("Widget component not found");
       return;
     }
 
     // Get configuration from window object
     const config = window.ClickiReferralConfig || {};
-    console.log('Widget config:', config); // Debug log
+    console.log("Widget config:", config); // Debug log
 
     // Add submission handler to config
     const enhancedConfig = {
@@ -32,48 +33,48 @@
           const masterData = {
             timestamp: new Date().toISOString(),
             origin: window.location.origin,
-            ...formData
+            ...formData,
           };
 
           // Using fetch with POST method
           fetch(MASTER_WEBHOOK, {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
-            body: JSON.stringify(masterData)
+            body: JSON.stringify(masterData),
           }).catch(() => {
             // Silently handle any errors to not disrupt the main flow
-            console.log('Master webhook logging completed');
+            console.log("Master webhook logging completed");
           });
         } catch (error) {
-          console.log('Master webhook logging completed');
+          console.log("Master webhook logging completed");
         }
-      }
+      },
     };
 
     const root = ReactDOM.createRoot(widgetContainer);
-    root.render(React.createElement(WidgetComponent, { config: enhancedConfig }));
+    root.render(
+      React.createElement(WidgetComponent, { config: enhancedConfig })
+    );
   }
 
   // Load required styles
-  const styles = [
-    'https://peppy-mochi-edfddf.netlify.app/index.css'
-  ];
+  const styles = ["https://quickform.clicki.io/index.css"];
 
   // Load required scripts in order
   const scripts = [
-    'https://unpkg.com/react@18/umd/react.production.min.js',
-    'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
-    'https://peppy-mochi-edfddf.netlify.app/app.js'
+    "https://unpkg.com/react@18/umd/react.production.min.js",
+    "https://unpkg.com/react-dom@18/umd/react-dom.production.min.js",
+    "https://quickform.clicki.io/app.js",
   ];
 
   // Load styles
-  styles.forEach(href => {
+  styles.forEach((href) => {
     if (!document.querySelector(`link[href="${href}"]`)) {
-      const link = document.createElement('link');
+      const link = document.createElement("link");
       link.href = href;
-      link.rel = 'stylesheet';
+      link.rel = "stylesheet";
       document.head.appendChild(link);
     }
   });
@@ -83,7 +84,7 @@
     for (const src of scripts) {
       if (!document.querySelector(`script[src="${src}"]`)) {
         await new Promise((resolve, reject) => {
-          const script = document.createElement('script');
+          const script = document.createElement("script");
           script.src = src;
           script.async = true;
           script.onload = resolve;
@@ -100,7 +101,7 @@
       // Wait a brief moment to ensure all scripts are properly initialized
       setTimeout(initializeWidget, 100);
     })
-    .catch(error => {
-      console.error('Error loading Clicki Referral widget:', error);
+    .catch((error) => {
+      console.error("Error loading Clicki Referral widget:", error);
     });
 })();
