@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { X, DollarSign, Gift } from 'lucide-react';
-import ThankYouModal from './ThankYouModal';
+import React, { useState, useEffect } from "react";
+import { X, DollarSign, Gift } from "lucide-react";
+import ThankYouModal from "./ThankYouModal";
 
 interface FormData {
   firstName: string;
@@ -21,23 +21,27 @@ interface WidgetConfig {
 }
 
 const INITIAL_FORM_DATA: FormData = {
-  firstName: '',
-  lastName: '',
-  phoneNumber: '',
-  referralFirstName: '',
-  referralLastName: '',
-  referralPhone: '',
+  firstName: "",
+  lastName: "",
+  phoneNumber: "",
+  referralFirstName: "",
+  referralLastName: "",
+  referralPhone: "",
 };
 
 const DEFAULT_CONFIG: WidgetConfig = {
-  buttonColor: '#4F46E5',
-  youtubeVideoId: '',
-  headerText: 'Refer a business to Clicki Referrals!',
-  rewardText: 'Earn $25 per referral',
-  webhookUrl2: '',
+  buttonColor: "#4F46E5",
+  youtubeVideoId: "",
+  headerText: "Refer a business to Clicki Referrals!",
+  rewardText: "Earn $25 per referral",
+  webhookUrl2: "",
 };
 
-export default function ReferralWidget({ config = {} }: { config?: WidgetConfig }) {
+export default function ReferralWidget({
+  config = {},
+}: {
+  config?: WidgetConfig;
+}) {
   const finalConfig = { ...DEFAULT_CONFIG, ...config };
   const [isOpen, setIsOpen] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
@@ -46,14 +50,14 @@ export default function ReferralWidget({ config = {} }: { config?: WidgetConfig 
 
   useEffect(() => {
     const checkHash = () => {
-      if (window.location.hash === '#referral') {
+      if (window.location.hash === "#referral") {
         setIsOpen(true);
       }
     };
 
     checkHash();
-    window.addEventListener('hashchange', checkHash);
-    return () => window.removeEventListener('hashchange', checkHash);
+    window.addEventListener("hashchange", checkHash);
+    return () => window.removeEventListener("hashchange", checkHash);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,12 +67,21 @@ export default function ReferralWidget({ config = {} }: { config?: WidgetConfig 
     try {
       if (finalConfig.webhookUrl2) {
         const url = finalConfig.webhookUrl2
-          .replace('{firstName}', encodeURIComponent(formData.firstName))
-          .replace('{lastName}', encodeURIComponent(formData.lastName))
-          .replace('{phoneNumber}', encodeURIComponent(formData.phoneNumber))
-          .replace('{referralFirstName}', encodeURIComponent(formData.referralFirstName))
-          .replace('{referralLastName}', encodeURIComponent(formData.referralLastName))
-          .replace('{referralPhone}', encodeURIComponent(formData.referralPhone));
+          .replace("{firstName}", encodeURIComponent(formData.firstName))
+          .replace("{lastName}", encodeURIComponent(formData.lastName))
+          .replace("{phoneNumber}", encodeURIComponent(formData.phoneNumber))
+          .replace(
+            "{referralFirstName}",
+            encodeURIComponent(formData.referralFirstName)
+          )
+          .replace(
+            "{referralLastName}",
+            encodeURIComponent(formData.referralLastName)
+          )
+          .replace(
+            "{referralPhone}",
+            encodeURIComponent(formData.referralPhone)
+          );
 
         // Fire and forget the webhook
         new Image().src = url;
@@ -78,7 +91,7 @@ export default function ReferralWidget({ config = {} }: { config?: WidgetConfig 
         await finalConfig.onSubmit(formData);
       }
     } catch (error) {
-      console.log('Request completed');
+      console.log("Request completed");
     } finally {
       setFormData(INITIAL_FORM_DATA);
       setIsSubmitting(false);
@@ -88,7 +101,7 @@ export default function ReferralWidget({ config = {} }: { config?: WidgetConfig 
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
@@ -114,13 +127,13 @@ export default function ReferralWidget({ config = {} }: { config?: WidgetConfig 
 
   return (
     <>
-      <div 
-        className="fixed inset-0 bg-black/50 z-50 md:bg-transparent md:pointer-events-none" 
+      <div
+        className="fixed inset-0 bg-black/50 z-50 md:bg-transparent md:pointer-events-none"
         onClick={() => setIsOpen(false)}
       >
-        <div 
-          onClick={e => e.stopPropagation()} 
-          className="fixed md:absolute w-full md:w-[380px] bg-white h-full md:h-auto md:bottom-4 md:left-4 md:rounded-lg shadow-xl overflow-auto md:pointer-events-auto"
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="fixed no-scrollbar max-h-screen md:absolute w-full md:w-[380px] bg-white h-full md:h-auto md:bottom-4 md:left-4 md:rounded-lg shadow-xl overflow-auto md:pointer-events-auto"
         >
           <div className="sticky top-0 bg-white p-4 border-b z-10">
             <button
@@ -129,7 +142,9 @@ export default function ReferralWidget({ config = {} }: { config?: WidgetConfig 
             >
               <X className="w-5 h-5" />
             </button>
-            <h2 className="text-xl font-bold mb-1">{finalConfig.headerText} 👋</h2>
+            <h2 className="text-xl font-bold mb-1">
+              {finalConfig.headerText} 👋
+            </h2>
             {finalConfig.youtubeVideoId && (
               <div className="aspect-video bg-gray-100 rounded-lg mb-4">
                 <iframe
@@ -148,13 +163,17 @@ export default function ReferralWidget({ config = {} }: { config?: WidgetConfig 
                 <DollarSign className="w-5 h-5" />
                 Earn rewards!
               </div>
-              <p className="text-green-700 whitespace-pre-line">{finalConfig.rewardText}</p>
+              <p className="text-green-700 whitespace-pre-line">
+                {finalConfig.rewardText}
+              </p>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-4 space-y-6">
+          <form onSubmit={handleSubmit} className="p-4 space-y-6 pb-6">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">What's your name?</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                What's your name?
+              </label>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -178,7 +197,9 @@ export default function ReferralWidget({ config = {} }: { config?: WidgetConfig 
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">What's your phone number?</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                What's your phone number?
+              </label>
               <input
                 type="tel"
                 name="phoneNumber"
@@ -191,7 +212,9 @@ export default function ReferralWidget({ config = {} }: { config?: WidgetConfig 
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Who are you referring?</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Who are you referring?
+              </label>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -215,7 +238,9 @@ export default function ReferralWidget({ config = {} }: { config?: WidgetConfig 
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">What's their number?</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                What's their number?
+              </label>
               <input
                 type="tel"
                 name="referralPhone"
@@ -234,7 +259,7 @@ export default function ReferralWidget({ config = {} }: { config?: WidgetConfig 
               className="w-full text-white px-4 py-3 rounded-lg font-dm-sans font-bold hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md animate-pulse-beacon"
             >
               {isSubmitting ? (
-                'Submitting...'
+                "Submitting..."
               ) : (
                 <>
                   <Gift className="w-4 h-4" />
@@ -243,9 +268,9 @@ export default function ReferralWidget({ config = {} }: { config?: WidgetConfig 
               )}
             </button>
           </form>
-          
-          <div className="p-2 text-center text-xs text-gray-500 border-t">
-            <a 
+
+          <div className="p-2 text-center text-xs text-gray-500 border-t sticky bottom-0 bg-white">
+            <a
               href="https://joinclicki.com/?quickform"
               target="_blank"
               rel="noopener noreferrer"
@@ -256,9 +281,7 @@ export default function ReferralWidget({ config = {} }: { config?: WidgetConfig 
           </div>
         </div>
       </div>
-      {showThankYou && (
-        <ThankYouModal onClose={() => setShowThankYou(false)} />
-      )}
+      {showThankYou && <ThankYouModal onClose={() => setShowThankYou(false)} />}
     </>
   );
 }
