@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -61,4 +61,12 @@
 
 .animate-pulse-beacon {
   animation: pulse 2s infinite ease-in-out, beacon 2s infinite ease-in-out;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
+}
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
