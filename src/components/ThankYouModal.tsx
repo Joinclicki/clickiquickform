@@ -45,12 +45,12 @@ export default function ThankYouModal({ onClose }: ThankYouModalProps) {
             </p>
           </div>
 
-          <div
+          <button
             onClick={onClose}
             className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium px-6 py-2 rounded-lg transition-colors duration-200"
           >
             Close
-          </div>
+          </button>
         </div>
       </div>
     </div>
