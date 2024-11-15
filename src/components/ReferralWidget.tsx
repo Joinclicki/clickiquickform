@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, createRef } from "react";
 import { X, DollarSign, Gift } from "lucide-react";
 import ThankYouModal from "./ThankYouModal";
 
@@ -34,7 +34,8 @@ const DEFAULT_CONFIG: WidgetConfig = {
   youtubeVideoId: "",
   headerText: "Refer a business to Clicki Referrals!",
   rewardText: "Earn $25 per referral",
-  webhookUrl2: "",
+  webhookUrl2:
+    "https://login.clicki.io/api/webhooks/incoming/cC3Ao2ZxzGa6HfAmHwvTHN?campaignId=8c5ab77d-3e88-4ff5-8612-0987650905df&email=&cell_phone={phoneNumber}&firstName={firstName}&referralFirstName={referralFirstName}&referralLastName={referralLastName}&referralEmail=&referralPhone={referralPhone}",
 };
 
 export default function ReferralWidget({
@@ -48,6 +49,8 @@ export default function ReferralWidget({
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const formRef = createRef<HTMLFormElement>();
+
   useEffect(() => {
     const checkHash = () => {
       if (window.location.hash === "#referral") {
@@ -60,8 +63,8 @@ export default function ReferralWidget({
     return () => window.removeEventListener("hashchange", checkHash);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
+    // e.preventDefault();
     setIsSubmitting(true);
 
     try {
@@ -110,14 +113,14 @@ export default function ReferralWidget({
   if (!isOpen) {
     return (
       <>
-        <button
+        <div
           onClick={() => setIsOpen(true)}
           style={{ backgroundColor: finalConfig.buttonColor }}
-          className="fixed bottom-4 left-4 z-50 text-white px-6 py-3 rounded-full font-dm-sans font-bold shadow-lg hover:opacity-90 transition-all flex items-center gap-2"
+          className="fixed bottom-4 left-4 z-50 text-white px-6 py-3 rounded-full font-dm-sans font-bold shadow-lg hover:opacity-90 transition-all flex items-center gap-2 select-none cursor-pointer"
         >
           <Gift className="w-5 h-5" />
           Refer & Earn
-        </button>
+        </div>
         {showThankYou && (
           <ThankYouModal onClose={() => setShowThankYou(false)} />
         )}
@@ -136,12 +139,12 @@ export default function ReferralWidget({
           className="fixed no-scrollbar max-h-screen md:absolute w-full md:w-[380px] bg-white h-full md:h-auto md:bottom-4 md:left-4 md:rounded-lg shadow-xl overflow-auto md:pointer-events-auto"
         >
           <div className="sticky top-0 bg-white p-4 border-b z-10">
-            <button
+            <div
               onClick={() => setIsOpen(false)}
               className="absolute right-4 top-4 text-gray-500 hover:text-gray-700"
             >
               <X className="w-5 h-5" />
-            </button>
+            </div>
             <h2 className="text-xl font-bold mb-1">
               {finalConfig.headerText} 👋
             </h2>
@@ -169,7 +172,11 @@ export default function ReferralWidget({
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-4 space-y-6 pb-6">
+          <form
+            ref={formRef}
+            onSubmit={handleSubmit}
+            className="p-4 space-y-6 pb-6"
+          >
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 What's your name?
@@ -252,11 +259,18 @@ export default function ReferralWidget({
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              style={{ backgroundColor: finalConfig.buttonColor }}
-              className="w-full text-white px-4 py-3 rounded-lg font-dm-sans font-bold hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md animate-pulse-beacon"
+            <div
+              onClick={() => {
+                if (!isSubmitting) {
+                  handleSubmit();
+                }
+              }}
+              style={{
+                backgroundColor: isSubmitting
+                  ? "gray"
+                  : finalConfig.buttonColor,
+              }}
+              className="w-full text-white px-4 py-3 rounded-lg font-dm-sans font-bold hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md animate-pulse-beacon cursor-pointer select-none"
             >
               {isSubmitting ? (
                 "Submitting..."
@@ -266,7 +280,7 @@ export default function ReferralWidget({
                   Send Referral
                 </>
               )}
-            </button>
+            </div>
           </form>
 
           <div className="p-2 text-center text-xs text-gray-500 border-t sticky bottom-0 bg-white">
