@@ -34,8 +34,7 @@ const DEFAULT_CONFIG: WidgetConfig = {
   youtubeVideoId: "",
   headerText: "Refer a business to Clicki Referrals!",
   rewardText: "Earn $25 per referral",
-  webhookUrl2:
-    "https://login.clicki.io/api/webhooks/incoming/cC3Ao2ZxzGa6HfAmHwvTHN?campaignId=8c5ab77d-3e88-4ff5-8612-0987650905df&email=&cell_phone={phoneNumber}&firstName={firstName}&referralFirstName={referralFirstName}&referralLastName={referralLastName}&referralEmail=&referralPhone={referralPhone}",
+  webhookUrl2: "",
 };
 
 export default function ReferralWidget({
