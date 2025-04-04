@@ -35,6 +35,7 @@ interface FormData {
   firstName: string;
   lastName: string;
   phoneNumber: string;
+  email: string;
   referralFirstName: string;
   referralLastName: string;
   referralPhone: string;
@@ -42,6 +43,7 @@ interface FormData {
   referralCity: string;
   referralState: string;
   referralPostalCode: string;
+  referralEmail?: string;
 }
 
 interface WidgetConfig {
@@ -49,7 +51,9 @@ interface WidgetConfig {
   youtubeVideoId?: string;
   headerText?: string;
   rewardText?: string;
-  webhookUrl2?: string;
+  webhookUrl?: string;
+  campaignId?: string;
+  email?: string;
   onSubmit?: (formData: FormData) => Promise<void>;
   collectRefereeAddress?: boolean;
 }
@@ -58,6 +62,7 @@ const INITIAL_FORM_DATA: FormData = {
   firstName: "",
   lastName: "",
   phoneNumber: "",
+  email: "",
   referralFirstName: "",
   referralLastName: "",
   referralPhone: "",
@@ -65,6 +70,7 @@ const INITIAL_FORM_DATA: FormData = {
   referralCity: "",
   referralState: "",
   referralPostalCode: "",
+  referralEmail: "",
 };
 
 const DEFAULT_CONFIG: WidgetConfig = {
@@ -72,7 +78,7 @@ const DEFAULT_CONFIG: WidgetConfig = {
   youtubeVideoId: "dQw4w9WgXcQ", // Temporary YouTube video ID
   headerText: "Refer a business to Clicki Referrals!",
   rewardText: "Earn $25 per referral",
-  webhookUrl2: "",
+  webhookUrl: "https://login.clicki.io/api/webhooks/incoming/creVvNnPbeA2ngVY3VuoLw?campaignId=f2c3d2d8-4661-4e4a-976a-866655c9b502",
   collectRefereeAddress: true,
 };
 
@@ -104,103 +110,136 @@ export default function ReferralWidget({
   }, []);
 
   useEffect(() => {
-    // Load Google Places API
+    // Check if Google Maps API is already loaded
+    const isGoogleMapsLoaded = () => {
+      return window.google && window.google.maps && window.google.maps.places;
+    };
+
+    // Function to initialize Places Autocomplete
+    const initializePlacesAutocomplete = () => {
+      if (autocompleteInputRef.current && window.google?.maps?.places) {
+        const autocomplete = new window.google.maps.places.Autocomplete(
+          autocompleteInputRef.current,
+          {
+            types: ["address"],
+            componentRestrictions: { country: "us" },
+          }
+        );
+
+        autocomplete.addListener("place_changed", () => {
+          const place = autocomplete.getPlace();
+          if (place.address_components) {
+            let streetNumber = "";
+            let route = "";
+            let city = "";
+            let state = "";
+            let postalCode = "";
+
+            place.address_components.forEach((component) => {
+              if (component.types.includes("street_number")) {
+                streetNumber = component.long_name;
+              }
+              if (component.types.includes("route")) {
+                route = component.long_name;
+              }
+              if (component.types.includes("locality")) {
+                city = component.long_name;
+              }
+              if (component.types.includes("administrative_area_level_1")) {
+                state = component.short_name;
+              }
+              if (component.types.includes("postal_code")) {
+                postalCode = component.long_name;
+              }
+            });
+
+            setFormData((prev) => ({
+              ...prev,
+              referralAddress: `${streetNumber} ${route}`.trim(),
+              referralCity: city,
+              referralState: state,
+              referralPostalCode: postalCode,
+            }));
+          }
+        });
+      }
+    };
+
+    // If Google Maps is already loaded with Places, initialize directly
+    if (isGoogleMapsLoaded()) {
+      initializePlacesAutocomplete();
+      return;
+    }
+
+    // Check if script is already being loaded
+    const existingScript = document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]');
+    if (existingScript) {
+      // If script exists but Places isn't loaded yet, wait for it
+      const checkPlacesLoaded = setInterval(() => {
+        if (window.google?.maps?.places) {
+          clearInterval(checkPlacesLoaded);
+          initializePlacesAutocomplete();
+        }
+      }, 100);
+      return () => clearInterval(checkPlacesLoaded);
+    }
+
+    // If Google Maps is not loaded at all, load it with Places
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCIZjUqlykeYKjpz1uKPJtyMUOihoJ&libraries=places&loading=async`;
     script.async = true;
     script.defer = true;
+    
+    // Use a promise to handle the loading
+    const loadPromise = new Promise((resolve) => {
+      script.onload = () => {
+        const checkGoogleLoaded = setInterval(() => {
+          if (window.google?.maps?.places) {
+            clearInterval(checkGoogleLoaded);
+            resolve(true);
+          }
+        }, 100);
+      };
+    });
+
     document.head.appendChild(script);
 
+    // Initialize Places after script is loaded
+    loadPromise.then(() => {
+      initializePlacesAutocomplete();
+    });
+
     return () => {
-      document.head.removeChild(script);
+      // Only remove the script if we added it
+      if (script.parentNode === document.head) {
+        document.head.removeChild(script);
+      }
     };
-  }, []);
-
-  useEffect(() => {
-    if (autocompleteInputRef.current && window.google) {
-      const autocomplete = new window.google.maps.places.Autocomplete(
-        autocompleteInputRef.current,
-        {
-          types: ["address"],
-          componentRestrictions: { country: "us" },
-        }
-      );
-
-      autocomplete.addListener("place_changed", () => {
-        const place = autocomplete.getPlace();
-        if (place.address_components) {
-          let streetNumber = "";
-          let route = "";
-          let city = "";
-          let state = "";
-          let postalCode = "";
-
-          place.address_components.forEach((component) => {
-            if (component.types.includes("street_number")) {
-              streetNumber = component.long_name;
-            }
-            if (component.types.includes("route")) {
-              route = component.long_name;
-            }
-            if (component.types.includes("locality")) {
-              city = component.long_name;
-            }
-            if (component.types.includes("administrative_area_level_1")) {
-              state = component.short_name;
-            }
-            if (component.types.includes("postal_code")) {
-              postalCode = component.long_name;
-            }
-          });
-
-          setFormData((prev) => ({
-            ...prev,
-            referralAddress: `${streetNumber} ${route}`.trim(),
-            referralCity: city,
-            referralState: state,
-            referralPostalCode: postalCode,
-          }));
-        }
-      });
-    }
   }, [autocompleteInputRef.current]);
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
 
     try {
-      if (finalConfig.webhookUrl2) {
-        const url = finalConfig.webhookUrl2
-          .replace("{firstName}", encodeURIComponent(formData.firstName))
-          .replace("{lastName}", encodeURIComponent(formData.lastName))
-          .replace("{phoneNumber}", encodeURIComponent(formData.phoneNumber))
-          .replace(
-            "{referralFirstName}",
-            encodeURIComponent(formData.referralFirstName)
-          )
-          .replace(
-            "{referralLastName}",
-            encodeURIComponent(formData.referralLastName)
-          )
-          .replace(
-            "{referralPhone}",
-            encodeURIComponent(formData.referralPhone)
-          )
-          .replace(
-            "{referralAddress}",
-            encodeURIComponent(formData.referralAddress)
-          )
-          .replace("{referralCity}", encodeURIComponent(formData.referralCity))
-          .replace(
-            "{referralState}",
-            encodeURIComponent(formData.referralState)
-          )
-          .replace(
-            "{referralPostalCode}",
-            encodeURIComponent(formData.referralPostalCode)
-          );
+      if (finalConfig.webhookUrl) {
+        // Format phone number to ensure it has the +1 prefix
+        const formatPhoneNumber = (phone: string) => {
+          // Remove all non-digit characters
+          const digitsOnly = phone.replace(/\D/g, '');
+          // Add +1 prefix if not already present
+          return digitsOnly.startsWith('1') ? `+${digitsOnly}` : `+1${digitsOnly}`;
+        };
 
+        // Format referral phone number
+        const formattedReferralPhone = formatPhoneNumber(formData.referralPhone);
+        
+        // Build the webhook URL with campaign ID in the URL path
+        const baseUrl = finalConfig.webhookUrl.replace(/\/$/, ''); // Remove trailing slash if present
+        const url = `${baseUrl}&email=${encodeURIComponent(formData.email || '')}&cell_phone=${encodeURIComponent(formatPhoneNumber(formData.phoneNumber))}&firstName=${encodeURIComponent(formData.firstName)}&referralFirstName=${encodeURIComponent(formData.referralFirstName)}&referralLastName=${encodeURIComponent(formData.referralLastName)}&referralEmail=${encodeURIComponent(formData.referralEmail || '')}&referralPhone=${encodeURIComponent(formattedReferralPhone)}`;
+
+        // Send the webhook request
         new Image().src = url;
+        
       }
 
       if (finalConfig.onSubmit) {
@@ -266,14 +305,29 @@ export default function ReferralWidget({
         />
       </div>
 
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1">
+          What's your email?
+        </label>
+        <input
+          type="email"
+          name="email"
+          placeholder="your.email@example.com"
+          value={formData.email}
+          onChange={handleInputChange}
+          className="block w-full px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 placeholder:text-gray-400 text-[15px]"
+          required
+        />
+      </div>
+
       <div
         onClick={() => {
-          if (formData.firstName && formData.lastName && formData.phoneNumber) {
+          if (formData.firstName && formData.lastName && formData.phoneNumber && formData.email) {
             setStep(2);
           }
         }}
         style={{
-          backgroundColor: !formData.firstName || !formData.lastName || !formData.phoneNumber
+          backgroundColor: !formData.firstName || !formData.lastName || !formData.phoneNumber || !formData.email
             ? "gray"
             : finalConfig.buttonColor,
         }}
@@ -391,16 +445,20 @@ export default function ReferralWidget({
 
       <div
         onClick={() => {
-          if (!isSubmitting) {
+          if (!isSubmitting && isFormValid()) {
             handleSubmit();
           }
         }}
         style={{
-          backgroundColor: isSubmitting
+          backgroundColor: isSubmitting || !isFormValid()
             ? "gray"
             : finalConfig.buttonColor,
         }}
-        className="w-full text-white px-4 py-2.5 rounded-lg font-dm-sans font-bold hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md animate-pulse-beacon cursor-pointer select-none"
+        className={`w-full text-white px-4 py-2.5 rounded-lg font-dm-sans font-bold transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-md cursor-pointer select-none ${
+          isSubmitting || !isFormValid() 
+            ? "opacity-50 cursor-not-allowed" 
+            : "hover:opacity-90 animate-pulse-beacon"
+        }`}
       >
         {isSubmitting ? (
           "Submitting..."
@@ -413,6 +471,34 @@ export default function ReferralWidget({
       </div>
     </>
   );
+
+  // Add a function to check if the form is valid
+  const isFormValid = () => {
+    // Basic validation for step 1
+    if (step === 1) {
+      return formData.firstName.trim() !== "" && 
+             formData.lastName.trim() !== "" && 
+             formData.phoneNumber.trim() !== "" &&
+             formData.email.trim() !== "";
+    }
+    
+    // Validation for step 2
+    const basicFieldsValid = 
+      formData.referralFirstName.trim() !== "" && 
+      formData.referralLastName.trim() !== "" && 
+      formData.referralPhone.trim() !== "";
+    
+    // If address collection is enabled, check address fields
+    if (finalConfig.collectRefereeAddress) {
+      return basicFieldsValid && 
+             formData.referralAddress.trim() !== "" && 
+             formData.referralCity.trim() !== "" && 
+             formData.referralState.trim() !== "" && 
+             formData.referralPostalCode.trim() !== "";
+    }
+    
+    return basicFieldsValid;
+  };
 
   if (!isOpen) {
     return (
