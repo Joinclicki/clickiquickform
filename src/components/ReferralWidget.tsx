@@ -73,7 +73,7 @@ const DEFAULT_CONFIG: WidgetConfig = {
   headerText: "Refer a business to Clicki Referrals!",
   rewardText: "Earn $25 per referral",
   webhookUrl2: "",
-  collectRefereeAddress: false,
+  collectRefereeAddress: true,
 };
 
 export default function ReferralWidget({
@@ -322,59 +322,69 @@ export default function ReferralWidget({
         </div>
       </div>
 
-      <input
-        type="tel"
-        name="referralPhone"
-        placeholder="Their phone number"
-        value={formData.referralPhone}
-        onChange={handleInputChange}
-        className="block w-full px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 placeholder:text-gray-400 text-[15px]"
-        required
-      />
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1">
+          What's their number?
+        </label>
+        <input
+          type="tel"
+          name="referralPhone"
+          placeholder="(555) 555-5555"
+          value={formData.referralPhone}
+          onChange={handleInputChange}
+          className="block w-full px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 placeholder:text-gray-400 text-[15px]"
+          required
+        />
+      </div>
 
       {finalConfig.collectRefereeAddress && (
-        <div className="space-y-2">
-          <div className="relative">
-            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              ref={autocompleteInputRef}
-              type="text"
-              name="referralAddress"
-              placeholder="Their street address"
-              value={formData.referralAddress}
-              onChange={handleInputChange}
-              className="block w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 placeholder:text-gray-400 text-[15px]"
-              required
-            />
-          </div>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              name="referralCity"
-              placeholder="City"
-              value={formData.referralCity}
-              onChange={handleInputChange}
-              className="block w-full px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 placeholder:text-gray-400 text-[15px]"
-              required
-            />
-            <input
-              type="text"
-              name="referralState"
-              placeholder="State"
-              value={formData.referralState}
-              onChange={handleInputChange}
-              className="block w-1/3 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 placeholder:text-gray-400 text-[15px]"
-              required
-            />
-            <input
-              type="text"
-              name="referralPostalCode"
-              placeholder="ZIP"
-              value={formData.referralPostalCode}
-              onChange={handleInputChange}
-              className="block w-1/3 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 placeholder:text-gray-400 text-[15px]"
-              required
-            />
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">
+            What's their address?
+          </label>
+          <div className="space-y-2">
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                ref={autocompleteInputRef}
+                type="text"
+                name="referralAddress"
+                placeholder="Street address"
+                value={formData.referralAddress}
+                onChange={handleInputChange}
+                className="block w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 placeholder:text-gray-400 text-[15px]"
+                required
+              />
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                name="referralCity"
+                placeholder="City"
+                value={formData.referralCity}
+                onChange={handleInputChange}
+                className="block w-full px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 placeholder:text-gray-400 text-[15px]"
+                required
+              />
+              <input
+                type="text"
+                name="referralState"
+                placeholder="State"
+                value={formData.referralState}
+                onChange={handleInputChange}
+                className="block w-1/3 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 placeholder:text-gray-400 text-[15px]"
+                required
+              />
+              <input
+                type="text"
+                name="referralPostalCode"
+                placeholder="ZIP"
+                value={formData.referralPostalCode}
+                onChange={handleInputChange}
+                className="block w-1/3 px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200 placeholder:text-gray-400 text-[15px]"
+                required
+              />
+            </div>
           </div>
         </div>
       )}
@@ -469,7 +479,8 @@ export default function ReferralWidget({
           <form
             ref={formRef}
             onSubmit={handleSubmit}
-            className="p-3 space-y-4 pb-4"
+            className="p-3 space-y-4 pb-4 transition-[height] duration-1000 ease-in-out"
+          
           >
             {step === 1 ? renderStep1() : renderStep2()}
           </form>
